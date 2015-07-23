@@ -14,7 +14,14 @@ describe 'querying' do
   end
 
   it 'returns the name and motto of the character with the longest motto' do
-    expect(@db.execute(select_name_and_motto_of_char_with_longest_motto)).to eq([["Tyrion Lanister", "A Lanister always pays is debts"]])
+    sql = <<-SQL
+    SELECT name, motto
+  FROM characters
+  GROUP BY motto
+  ORDER BY LENGTH(motto) DESC
+  LIMIT 1
+  SQL
+    expect(@db.execute(sql)).to eq([["Tyrion Lanister", "A Lanister always pays is debts"]])
   end
 
   it 'determines the most prolific species of characters and return its value and count' do
@@ -30,6 +37,18 @@ describe 'querying' do
   end
 
   it 'selects all of the character names and their number of books they have appeared in, in descending order' do 
-    expect(@db.execute(select_character_names_and_number_of_books_they_are_in)).to eq([["Character Three",3], ["Character Two", 3],["Daenerys Targaryen", 3], ["Tyrion Lanister", 3], ["Character Four", 1], ["Character One", 1], ["Eddard Stark", 1], ["Lady", 1]])
+sql = <<-SQL
+SELECT characters.name, COUNT(books.title) AS "count_occurence"
+FROM characters
+INNER JOIN character_books
+ON characters.id = character_books.character_id
+INNER JOIN books
+ON books.id = character_books.book_id
+GROUP BY characters.name
+HAVING COUNT(books.title)
+ORDER BY "count_occurence" DESC
+SQL
+
+    expect(@db.execute(sql)).to eq([["Character Three",3], ["Character Two", 3],["Daenerys Targaryen", 3], ["Tyrion Lanister", 3], ["Character Four", 1], ["Character One", 1], ["Eddard Stark", 1], ["Lady", 1]])
   end
 end
