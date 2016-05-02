@@ -1,4 +1,4 @@
 UPDATE characters
 SET species = 'Martian'
-ORDER BY id DESC;
+WHERE id IN (SELECT id FROM characters ORDER BY id DESC LIMIT 1);
 
